@@ -3,8 +3,7 @@ name: Go package
 on: [push]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,7 +14,9 @@ jobs:
           go-version: '1.15'
 
       - name: Build
-        run: go build -v ./mind-software/...
+        run: go build -v ./...
+        working-directory: ./mind-software
 
       - name: Test
         run: go test -v ./mind-software/...
+        working-directory: ./mind-software
