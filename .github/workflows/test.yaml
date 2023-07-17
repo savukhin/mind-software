@@ -18,5 +18,5 @@ jobs:
         working-directory: ./mind-software
 
       - name: Test
-        run: go test -v ./mind-software/...
+        run: go test -v ./...
         working-directory: ./mind-software
