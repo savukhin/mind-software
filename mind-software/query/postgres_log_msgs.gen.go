@@ -29,11 +29,8 @@ func newPostgresLogMsg(db *gorm.DB, opts ...gen.DOOption) postgresLogMsg {
 	_postgresLogMsg.ALL = field.NewAsterisk(tableName)
 	_postgresLogMsg.ID = field.NewUint64(tableName, "id")
 	_postgresLogMsg.ObjID = field.NewUint64(tableName, "obj_id")
-	_postgresLogMsg.Timestamp = field.NewUint64(tableName, "id")
-	_postgresLogMsg.Log = field.NewString(tableName, "id")
-	_postgresLogMsg.CreatedAt = field.NewUint64(tableName, "created_at")
-	_postgresLogMsg.UpdatedAt = field.NewUint64(tableName, "updated_at")
-	_postgresLogMsg.DeletedAt = field.NewField(tableName, "deleted_at")
+	_postgresLogMsg.Timestamp = field.NewUint64(tableName, "timestamp")
+	_postgresLogMsg.Log = field.NewString(tableName, "log")
 
 	_postgresLogMsg.fillFieldMap()
 
@@ -48,9 +45,6 @@ type postgresLogMsg struct {
 	ObjID     field.Uint64
 	Timestamp field.Uint64
 	Log       field.String
-	CreatedAt field.Uint64
-	UpdatedAt field.Uint64
-	DeletedAt field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -69,11 +63,8 @@ func (p *postgresLogMsg) updateTableName(table string) *postgresLogMsg {
 	p.ALL = field.NewAsterisk(table)
 	p.ID = field.NewUint64(table, "id")
 	p.ObjID = field.NewUint64(table, "obj_id")
-	p.Timestamp = field.NewUint64(table, "id")
-	p.Log = field.NewString(table, "id")
-	p.CreatedAt = field.NewUint64(table, "created_at")
-	p.UpdatedAt = field.NewUint64(table, "updated_at")
-	p.DeletedAt = field.NewField(table, "deleted_at")
+	p.Timestamp = field.NewUint64(table, "timestamp")
+	p.Log = field.NewString(table, "log")
 
 	p.fillFieldMap()
 
@@ -90,14 +81,11 @@ func (p *postgresLogMsg) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (p *postgresLogMsg) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 7)
+	p.fieldMap = make(map[string]field.Expr, 4)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["obj_id"] = p.ObjID
-	p.fieldMap["id"] = p.Timestamp
-	p.fieldMap["id"] = p.Log
-	p.fieldMap["created_at"] = p.CreatedAt
-	p.fieldMap["updated_at"] = p.UpdatedAt
-	p.fieldMap["deleted_at"] = p.DeletedAt
+	p.fieldMap["timestamp"] = p.Timestamp
+	p.fieldMap["log"] = p.Log
 }
 
 func (p postgresLogMsg) clone(db *gorm.DB) postgresLogMsg {

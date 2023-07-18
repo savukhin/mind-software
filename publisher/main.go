@@ -3,29 +3,31 @@ package main
 import (
 	"fmt"
 	"log"
-	"mind-software/config"
-	"strconv"
+	"math/rand"
+	"publisher/config"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
-	"github.com/serialx/hashring"
 )
 
-func main() {
-	serversInRing := []string{"192.168.0.246:11212",
-		"192.168.0.247:11212",
-		"192.168.0.248:11212",
-		"192.168.0.249:11212",
-		"192.168.0.250:11212",
-		"192.168.0.251:11212",
-		"192.168.0.252:11212"}
+type NatsLogMsg struct {
+	ObjId uint64 `json:"id"`
+	Log   string `json:"log"`
+}
 
-	// replicaCount := 3
-	ring := hashring.New(serversInRing)
-	server, ok := ring.GetNode("my_key")
-	fmt.Println(server)
-	fmt.Println(ok)
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+func main() {
+	rand.Seed(time.Now().UnixNano())
 
 	cfg := &config.Config{}
 	err := envconfig.Process("", cfg)
@@ -38,23 +40,22 @@ func main() {
 		panic(err)
 	}
 	defer nc.Close()
-	js, err := nc.JetStream()
+	ec, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		panic(err)
 	}
-	js.AddStream(&nats.StreamConfig{
-		Name:     "ORDERS",
-		Subjects: []string{"ORDERS.*"},
-	})
-	js.UpdateStream(&nats.StreamConfig{
-		Name:     "ORDERS",
-		MaxBytes: 8,
-	})
+	defer ec.Close()
+
+	sleepDuration := time.Duration(1/cfg.QueriesMin) * time.Minute
 
 	for i := 0; ; i++ {
-		time.Sleep(1 * time.Second)
+		time.Sleep(sleepDuration)
 		fmt.Println("Publish", i)
-		nc.Publish("foo-nc", []byte("NC Message "+strconv.Itoa(i)))
-		js.Publish("ORDERS.scratch", []byte("JS Message "+strconv.Itoa(i)))
+		// nc.Publish("foo-nc", []byte("NC Message "+strconv.Itoa(i)))
+		msg := &NatsLogMsg{
+			ObjId: uint64(rand.Intn(3)),
+			Log:   randSeq(rand.Intn(100)),
+		}
+		ec.Publish(cfg.NatsLogsTopic, msg)
 	}
 }

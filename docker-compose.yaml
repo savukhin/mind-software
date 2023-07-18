@@ -7,7 +7,7 @@ services:
     ports:
       - 4222:4222
       - 5555:5555
-    networks: [ "test_network" ]
+
   postgresnode:
     image: postgres:15
     container_name: postgresnode
@@ -41,9 +41,6 @@ services:
       - postgresnode2
       - nats
     environment:
-      REDIS_IP: "redis-master"
-      REDIS_PASSWORD: "mindsoftware_pass"
-
       POSTGRES_IPS: "postgresnode,postgresnode2"
       POSTGRES_PORT: "5432"
       POSTGRES_PASSWORD: mindsoftware
@@ -55,19 +52,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-
-  publisher:
-    build: ./publisher
-    restart: always
-    depends_on:
-      - postgresnode
-      - postgresnode2
-      - nats
-    environment:
-      NATS_URL: nats://nats:4222
-      QUERIES_MIN: 100
-    networks: [ "test_network" ]
-
 
 networks:
   test_network:

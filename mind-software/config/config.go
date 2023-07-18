@@ -11,5 +11,5 @@ type Config struct {
 	NatsUrl           string `envconfig:"NATS_URL" required:"true"`
 	NatsLogsTopic     string `envconfig:"NATS_LOGS_TOPIC" default:"logs"`
 	NatsQueryTopic    string `envconfig:"NATS_QUERY_TOPIC" default:"query"`
-	NatsResponseTopic string `envconfig:"NATS_RESPONSE_TOPIC" default:"query"`
+	NatsResponseTopic string `envconfig:"NATS_RESPONSE_TOPIC" default:"response"`
 }
