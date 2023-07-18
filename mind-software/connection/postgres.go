@@ -10,13 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type postgresClient struct {
+type PostgresClient struct {
 	client *gorm.DB
 	host   string
 }
 
-func NewPostgresClient(client *gorm.DB, host string) *postgresClient {
-	return &postgresClient{
+func NewPostgresClient(client *gorm.DB, host string) *PostgresClient {
+	return &PostgresClient{
 		client: client,
 		host:   host,
 	}
@@ -26,12 +26,12 @@ type IPostgresClients interface {
 	GetShard(key string) *gorm.DB
 }
 
-type postgresClients struct {
+type PostgresClients struct {
 	clients map[string]*gorm.DB
 	ring    *hashring.HashRing
 }
 
-func NewpostgresClients(clients []postgresClient) *postgresClients {
+func NewPostgresClients(clients []*PostgresClient) *PostgresClients {
 	hosts := make([]string, len(clients))
 	clientsMap := map[string]*gorm.DB{}
 
@@ -40,13 +40,13 @@ func NewpostgresClients(clients []postgresClient) *postgresClients {
 		clientsMap[c.host] = c.client
 	}
 
-	return &postgresClients{
+	return &PostgresClients{
 		clients: clientsMap,
 		ring:    hashring.New(hosts),
 	}
 }
 
-func (clients postgresClients) GetShard(key string) *gorm.DB {
+func (clients PostgresClients) GetShard(key string) *gorm.DB {
 	server, _ := clients.ring.GetNode(key)
 	return clients.clients[server]
 }
@@ -56,7 +56,7 @@ func autoMigrate(gormdb *gorm.DB) error {
 }
 
 func ConnectPostgres(cfg *config.Config) (IPostgresClients, error) {
-	result := make([]postgresClient, 0)
+	result := make([]*PostgresClient, 0)
 
 	for _, ip := range cfg.PostgresIPs {
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
@@ -79,12 +79,9 @@ func ConnectPostgres(cfg *config.Config) (IPostgresClients, error) {
 			}
 		}
 
-		client := postgresClient{
-			client: gormDB,
-			host:   fmt.Sprintf("%s:%d", ip, cfg.PostgresPort),
-		}
+		client := NewPostgresClient(gormDB, fmt.Sprintf("%s:%d", ip, cfg.PostgresPort))
 		result = append(result, client)
 	}
 
-	return NewpostgresClients(result), nil
+	return NewPostgresClients(result), nil
 }
