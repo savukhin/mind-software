@@ -1,0 +1,58 @@
+version: "3.9"
+services:
+  nats:
+    image: nats
+    entrypoint: /nats-server
+    command: "-js -m 5555"
+    ports:
+      - 4222:4222
+      - 5555:5555
+
+  postgresnode:
+    image: postgres:15
+    container_name: postgresnode
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mindsoftware
+      POSTGRES_USER: mindsoftware
+      POSTGRES_DB: mindsoftware
+    volumes:
+      - ./volumes/db1:/var/lib/postgresql/data
+    networks: [ "test_network" ]
+  postgresnode2:
+    image: postgres:15
+    container_name: postgresnode2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mindsoftware
+      POSTGRES_USER: mindsoftware
+      POSTGRES_DB: mindsoftware
+    volumes:
+      - ./volumes/db2:/var/lib/postgresql/data
+    networks: [ "test_network" ]
+
+  worker:
+    build: ./mind-software
+    restart: always
+    ports:
+      - 2112:2112
+    depends_on:
+      - postgresnode
+      - postgresnode2
+      - nats
+    environment:
+      POSTGRES_IPS: "postgresnode,postgresnode2"
+      POSTGRES_PORT: "5432"
+      POSTGRES_PASSWORD: mindsoftware
+      POSTGRES_USER: mindsoftware
+      POSTGRES_DB: mindsoftware
+
+      NATS_URL: nats://nats:4222
+    networks: [ "test_network" ]
+    deploy:
+      mode: replicated
+      replicas: 1
+
+networks:
+  test_network:
+    driver: bridge
