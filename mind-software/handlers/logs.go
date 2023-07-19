@@ -22,6 +22,8 @@ func AddLog(clients connection.IPostgresClients, logger *zap.Logger) func(msg *N
 			logger.Error("AddLog received nil message")
 			return errors.New("nil message")
 		}
+		logger.Debug(fmt.Sprintf("got new msg '%s' with id %d", msg.Log, msg.ObjId))
+
 		gormDB := clients.GetShard(fmt.Sprintf("%d", msg.ObjId))
 		table := query.Use(gormDB).PostgresLogMsg
 
