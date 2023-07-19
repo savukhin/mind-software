@@ -1,5 +1,8 @@
 package config
 
+const ReleaseMode = "release"
+const DebugMode = "debug"
+
 type Config struct {
 	PostgresIPs         []string `envconfig:"POSTGRES_IPS" required:"true"`
 	PostgresPort        int      `envconfig:"POSTGRES_PORT" default:"5432"`
@@ -12,4 +15,6 @@ type Config struct {
 	NatsLogsTopic     string `envconfig:"NATS_LOGS_TOPIC" default:"logs"`
 	NatsQueryTopic    string `envconfig:"NATS_QUERY_TOPIC" default:"query"`
 	NatsResponseTopic string `envconfig:"NATS_RESPONSE_TOPIC" default:"response"`
+
+	Mode string `envconfig:"MODE" default:"realease"`
 }

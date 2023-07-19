@@ -14,18 +14,22 @@ import (
 )
 
 func main() {
-	logger, err := zap.NewProduction()
+	cfg := &config.Config{}
+	err := envconfig.Process("", cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	var logger *zap.Logger
+	if cfg.Mode == config.ReleaseMode {
+		logger, err = zap.NewProduction()
+	} else {
+		logger, err = zap.NewDevelopment()
+	}
 	if err != nil {
 		logger = zap.NewNop()
 	}
 	defer logger.Sync()
-
-	cfg := &config.Config{}
-	err = envconfig.Process("", cfg)
-	if err != nil {
-		logger.Fatal(err.Error())
-		panic(err)
-	}
 
 	postgresClients, err := connection.ConnectPostgres(cfg)
 	if err != nil {

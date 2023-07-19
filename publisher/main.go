@@ -46,16 +46,17 @@ func main() {
 	}
 	defer ec.Close()
 
-	sleepDuration := time.Duration(1/cfg.QueriesMin) * time.Minute
+	sleepDuration := time.Duration(int(time.Minute) / cfg.QueriesMin)
 
 	for i := 0; ; i++ {
 		time.Sleep(sleepDuration)
-		fmt.Println("Publish", i)
 		// nc.Publish("foo-nc", []byte("NC Message "+strconv.Itoa(i)))
+
 		msg := &NatsLogMsg{
 			ObjId: uint64(rand.Intn(3)),
 			Log:   randSeq(rand.Intn(100)),
 		}
+		fmt.Printf("Publish i = %d; msg log = '%s' objId = %d\n", i, msg.Log, msg.ObjId)
 		ec.Publish(cfg.NatsLogsTopic, msg)
 	}
 }

@@ -51,6 +51,7 @@ services:
       POSTGRES_DB: mindsoftware
 
       NATS_URL: nats://nats:4222
+      MODE: debug
     networks: [ "test_network" ]
     deploy:
       mode: replicated
@@ -65,7 +66,7 @@ services:
       - nats
     environment:
       NATS_URL: nats://nats:4222
-      QUERIES_MIN: 100
+      QUERIES_MIN: 10
     networks: [ "test_network" ]
 
 
